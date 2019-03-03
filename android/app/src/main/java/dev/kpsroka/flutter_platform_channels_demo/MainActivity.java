@@ -12,8 +12,8 @@ import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
   private SensorManager sensorManager;
-  private Sensor gravitySensor;
-  private final SensorHandler sensorHandler = new SensorHandler();
+  private Sensor gravitySensor, lightSensor;
+  private SensorHandler sensorHandler;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -22,15 +22,18 @@ public class MainActivity extends FlutterActivity {
 
     sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
     gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+    lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 
     MethodChannel channel = new MethodChannel(getFlutterView(), "flutter.kpsroka.dev/sensors");
+    sensorHandler = new SensorHandler(channel);
     channel.setMethodCallHandler(sensorHandler);
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    sensorManager.registerListener(sensorHandler, gravitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+    sensorManager.registerListener(sensorHandler, gravitySensor, SensorManager.SENSOR_DELAY_UI);
+    sensorManager.registerListener(sensorHandler, lightSensor, SensorManager.SENSOR_DELAY_UI);
   }
 
   @Override

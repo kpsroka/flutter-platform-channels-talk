@@ -9,7 +9,13 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 class SensorHandler implements MethodChannel.MethodCallHandler, SensorEventListener {
+  final MethodChannel channel;
+
   double[] lastEventValues = new double[3];
+
+  SensorHandler(MethodChannel channel) {
+    this.channel = channel;
+  }
 
   @Override
   public void onMethodCall(MethodCall call, MethodChannel.Result result) {
@@ -26,8 +32,12 @@ class SensorHandler implements MethodChannel.MethodCallHandler, SensorEventListe
 
   @Override
   public void onSensorChanged(SensorEvent event) {
-    lastEventValues[0] = event.values[0];
-    lastEventValues[1] = event.values[1];
-    lastEventValues[2] = event.values[2];
+    if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
+      channel.invokeMethod("onLightLevelChange", (double) event.values[0]);
+    } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+      lastEventValues[0] = event.values[0];
+      lastEventValues[1] = event.values[1];
+      lastEventValues[2] = event.values[2];
+    }
   }
 }

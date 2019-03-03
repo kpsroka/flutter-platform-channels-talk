@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -26,15 +27,38 @@ class PlatformSmiley extends StatefulWidget {
 }
 
 class _PlatformSmileyState extends State<PlatformSmiley>
-    with SingleTickerProviderStateMixin<PlatformSmiley> {
+    with TickerProviderStateMixin<PlatformSmiley> {
   static const platform = const MethodChannel('flutter.kpsroka.dev/sensors');
 
   Offset _offset = Offset.zero;
   Ticker _ticker;
 
+  AnimationController _colorController;
+  Animation<Color> _bgColorAnimation;
+  Animation<Color> _fgColorAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    _colorController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    _bgColorAnimation = _colorController
+        .drive(ColorTween(begin: Colors.white, end: Colors.black));
+    _fgColorAnimation = _colorController
+        .drive(ColorTween(begin: Colors.black, end: Colors.white));
+
+    platform.setMethodCallHandler((methodCall) {
+      if (methodCall.method == 'onLightLevelChange') {
+        setState(() {
+          _colorController
+              .animateTo((methodCall.arguments / 100).roundToDouble());
+        });
+      } else {
+        throw MissingPluginException('No such method: ${methodCall.method}');
+      }
+    });
+
     _ticker = createTicker((Duration duration) {
       _refreshAccelerometer();
     });
@@ -42,20 +66,20 @@ class _PlatformSmileyState extends State<PlatformSmiley>
   }
 
   void dispose() {
+    _colorController.dispose();
     _ticker.dispose();
     super.dispose();
   }
 
   Future<void> _refreshAccelerometer() async {
     try {
-      final List<double> result =
-          await platform.invokeListMethod('getGravity');
+      final List<double> result = await platform.invokeListMethod('getGravity');
       setState(() {
-        _offset = Offset(
-            _offset.dx - (result[0] * 5), _offset.dy + (result[1] * 5));
+        _offset =
+            Offset(_offset.dx - (result[0] * 5), _offset.dy + (result[1] * 5));
       });
     } on PlatformException catch (e) {
-      print('Failed to get acceleration reading: ${e.message}');
+      print('Failed to get gravity reading: ${e.message}');
     }
   }
 
@@ -68,9 +92,16 @@ class _PlatformSmileyState extends State<PlatformSmiley>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Container(
+        alignment: Alignment.center,
+        color: _bgColorAnimation?.value,
         child: Transform.translate(
-            offset: _offset, child: Icon(Icons.directions_run, size: 128)),
+            offset: _offset,
+            child: Icon(
+              Icons.directions_run,
+              size: 128,
+              color: _fgColorAnimation?.value,
+            )),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _refresh,
