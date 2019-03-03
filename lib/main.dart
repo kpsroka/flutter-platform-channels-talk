@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 void main() => runApp(MyApp());
 
@@ -35,7 +34,8 @@ class _PlatformSmileyState extends State<PlatformSmiley> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Transform.translate(offset: _offset, child: SvgPicture.asset('assets/smile.svg', width: 128, height: 128,)),
+        child: Transform.translate(
+            offset: _offset, child: Icon(Icons.directions_run, size: 128)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _refresh,
