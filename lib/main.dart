@@ -12,21 +12,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: PlatformSmiley(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
+class PlatformSmiley extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _PlatformSmileyState createState() => _PlatformSmileyState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _PlatformSmileyState extends State<PlatformSmiley> {
   Offset _offset = Offset.zero;
 
   void _refresh() {
